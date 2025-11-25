@@ -1,10 +1,24 @@
+# Headless service for MongoDB
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec:
+  ports:
+  - port: 27017
+    name: mongodb-data
+  clusterIP: None
+  selector:
+    app: mongodb
+---
 # StatefulSet for MongoDB  
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongodb
 spec:
-  clusterIP: None
   serviceName: mongodb # Associated headless service for DNS resolution
   replicas: 3 # Number of MongoDB replicas
   selector:
@@ -23,9 +37,6 @@ spec:
           ports:
             - containerPort: 27017 # Default MongoDB port
               name: mongodb
-          volumeMounts:
-            - name: mongodb-data
-              mountPath: /data/db
           resources: # Resource requests and limits for MongoDB
             requests:
               cpu: 5m # Minimum CPU
@@ -41,12 +52,14 @@ spec:
                 - db.runCommand('ping').ok
             initialDelaySeconds: 5 # Wait time before starting probe
             periodSeconds: 5 # Interval between probes
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
   volumeClaimTemplates:
   - metadata:
       name: mongodb-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: "my-storage-class"
       resources:
         requests:
           storage: 1Gi

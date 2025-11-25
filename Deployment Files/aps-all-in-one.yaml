@@ -60,7 +60,7 @@ spec:
   - metadata:
       name: www
     spec:
-      accessModes: [ "ReadWriteOncePod" ]
+      accessModes: [ "ReadWriteOnce" ]
       storageClassName: "my-storage-class"
       resources:
         requests:

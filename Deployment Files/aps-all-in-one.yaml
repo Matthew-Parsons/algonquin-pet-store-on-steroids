@@ -1,11 +1,27 @@
-# StatefulSet for MongoDB
+# Headless service for MongoDB
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec:
+  ports:
+  - port: 27017
+    name: web
+  clusterIP: None
+  selector:
+    app: mongodb
+
+
+# StatefulSet for MongoDB  
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mongodb
+  name: web
 spec:
-  serviceName: mongodb # Associated headless service for DNS resolution
-  replicas: 1 # Number of MongoDB replicas
+  serviceName: "mongodb" # Associated headless service for DNS resolution
+  replicas: 3 # Number of MongoDB replicas
   selector:
     matchLabels:
       app: mongodb # Labels to match for this StatefulSet
@@ -21,7 +37,10 @@ spec:
           image: mongo:4.2 # MongoDB container image version
           ports:
             - containerPort: 27017 # Default MongoDB port
-              name: mongodb
+              name: web
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/mongodb/html
           resources: # Resource requests and limits for MongoDB
             requests:
               cpu: 5m # Minimum CPU
@@ -37,6 +56,15 @@ spec:
                 - db.runCommand('ping').ok
             initialDelaySeconds: 5 # Wait time before starting probe
             periodSeconds: 5 # Interval between probes
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: [ "ReadWriteOncePod" ]
+      storageClassName: "my-storage-class"
+      resources:
+        requests:
+          storage: 1Gi
 ---
 # Service to expose MongoDB
 apiVersion: v1

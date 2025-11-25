@@ -1,11 +1,11 @@
-# StatefulSet for MongoDB  
+# StatefulSet for MongoDB
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongodb
 spec:
   serviceName: mongodb # Associated headless service for DNS resolution
-  replicas: 3 # Number of MongoDB replicas
+  replicas: 1 # Number of MongoDB replicas
   selector:
     matchLabels:
       app: mongodb # Labels to match for this StatefulSet
@@ -41,13 +41,13 @@ spec:
             - name: mongodb-data
               mountPath: /data/db
   volumeClaimTemplates:
-  - metadata:
-      name: mongodb-data
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 1Gi
+    - metadata:
+        name: mongodb-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
 ---
 # Service to expose MongoDB
 apiVersion: v1
